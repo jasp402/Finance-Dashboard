@@ -12,13 +12,19 @@ import CurrentStatementWidget from './widgets/CurrentStatementWidget';
 import AccountBalanceWidget from './widgets/AccountBalanceWidget';
 import RecentTransactionsWidget from './widgets/RecentTransactionsWidget';
 import BudgetWidget from './widgets/BudgetWidget';
+import TestWidget from './widgets/totalsWidget';
+import { fetchWidgetData, selectWidget } from './store/myWidgetSlice';
 
 function FinanceDashboardApp() {
   const dispatch = useDispatch();
   const widgets = useSelector(selectWidgets);
+  const widgetsData = useSelector(selectWidget);
+
+  console.log(widgetsData);
 
   useEffect(() => {
     dispatch(getWidgets());
+    dispatch(fetchWidgetData());
   }, [dispatch]);
 
   return (
@@ -26,6 +32,7 @@ function FinanceDashboardApp() {
       header={<FinanceDashboardAppHeader />}
       content={
         <div className="w-full px-24 md:px-32 pb-24">
+
           {useMemo(() => {
             const container = {
               show: {
@@ -46,7 +53,7 @@ function FinanceDashboardApp() {
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-32 w-full mt-32">
                     <div className="grid gap-32 sm:grid-flow-col xl:grid-flow-row">
                       <motion.div variants={item} className="flex flex-col flex-auto">
-                        <PreviousStatementWidget />
+                         {!_.isEmpty(widgetsData) && <PreviousStatementWidget /> }
                       </motion.div>
 
                       <motion.div variants={item} className="flex flex-col flex-auto">
@@ -68,7 +75,8 @@ function FinanceDashboardApp() {
                 </motion.div>
               )
             );
-          }, [widgets])}
+          }, [widgets,widgetsData])}
+
         </div>
       }
     />

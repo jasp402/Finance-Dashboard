@@ -1,4 +1,5 @@
 import '@mock-api';
+import axios from 'axios';
 import BrowserRouter from '@fuse/core/BrowserRouter';
 import FuseLayout from '@fuse/core/FuseLayout';
 import FuseTheme from '@fuse/core/FuseTheme';
@@ -16,13 +17,14 @@ import settingsConfig from 'app/configs/settingsConfig';
 import withAppProviders from './withAppProviders';
 import { AuthProvider } from './auth/AuthContext';
 
-// import axios from 'axios';
+
 /**
  * Axios HTTP Request defaults
  */
-// axios.defaults.baseURL = "";
+axios.defaults.baseURL = "https://d544-2800-200-e640-fa5-00-8266.ngrok-free.app/webhook/api/v1";
 // axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-// axios.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded';
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+axios.defaults.headers.common['ngrok-skip-browser-warning'] = 'true';
 
 const emotionCacheOptions = {
   rtl: {
