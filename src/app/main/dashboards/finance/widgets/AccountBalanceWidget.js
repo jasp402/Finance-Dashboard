@@ -1,15 +1,34 @@
-import { useTheme } from '@mui/material/styles';
 import { useSelector } from 'react-redux';
-import Paper from '@mui/material/Paper';
-import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
+import { styled, ThemeProvider, useTheme } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
+import { useState } from 'react';
+import Tabs from '@mui/material/Tabs';
+import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
+import { selectContrastMainTheme } from 'app/store/fuse/settingsSlice';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { selectWidgets } from '../store/widgetsSlice';
+import { selectWidget } from '../store/myWidgetSlice';
 
-function AccountBalanceWidget(props) {
+const Root = styled(Paper)(({ theme }) => ({
+  background: theme.palette.primary.main,
+  color: theme.palette.primary.contrastText,
+}));
+
+function AccountBalanceWidget() {
   const theme = useTheme();
+  const contrastTheme = useSelector(selectContrastMainTheme(theme.palette.primary.main));
   const widgets = useSelector(selectWidgets);
-  const { series, growRate, ami } = widgets?.accountBalance;
+  const widgetsData = useSelector(selectWidget);
+  const [tabValue, setTabValue] = useState(0);
+  if (!widgetsData?.visitors) {
+    return <div className="p-24 text-red-500">Cargando datos financieros...</div>;
+  }
+
+  const { series, ranges } = widgetsData?.visitors;
+
+  const currentRange = Object.keys(ranges)[tabValue];
 
   const chartOptions = {
     chart: {
@@ -25,17 +44,42 @@ function AccountBalanceWidget(props) {
       height: '100%',
       type: 'area',
       sparkline: {
+        enabled: false,
+      },
+      toolbar: {
+        show: false,
+      },
+      zoom: {
         enabled: true,
       },
     },
-    colors: [theme.palette.secondary.light, theme.palette.secondary.light],
+    colors: [
+              contrastTheme.palette.secondary.light, // Color para PEN (ej: rojo)
+              contrastTheme.palette.warning.main // Color para USD (ej: amarillo)
+    ],
     fill: {
-      colors: [theme.palette.secondary.dark, theme.palette.secondary.light],
-      opacity: 0.5,
+      colors: [contrastTheme.palette.secondary.dark],
     },
-    series,
+    dataLabels: {
+      enabled: false,
+    },
+    grid: {
+      show: true,
+      borderColor: contrastTheme.palette.divider,
+      padding: {
+        top: 10,
+        bottom: -40,
+        left: 0,
+        right: 0,
+      },
+      position: 'back',
+      xaxis: {
+        lines: {
+          show: true,
+        },
+      },
+    },
     stroke: {
-      curve: 'straight',
       width: 2,
     },
     tooltip: {
@@ -45,63 +89,101 @@ function AccountBalanceWidget(props) {
         format: 'MMM dd, yyyy',
       },
       y: {
-        formatter: (value) => `${value}%`,
+        formatter: (value) => value.toFixed(2), // ✅ Formato en tooltip
       },
     },
     xaxis: {
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
+      crosshairs: {
+        stroke: {
+          color: contrastTheme.palette.divider,
+          dashArray: 0,
+          width: 2,
+        },
+      },
+      labels: {
+        offsetY: -20,
+        style: {
+          colors: contrastTheme.palette.text.secondary,
+        },
+      },
+      tickAmount: 20,
+      tooltip: {
+        enabled: false,
+      },
       type: 'datetime',
+    },
+    yaxis: {
+      axisTicks: {
+        show: false,
+      },
+      axisBorder: {
+        show: false,
+      },
+      min: (min) => min - 750,
+      max: (max) => max + 250,
+      tickAmount: 5,
+      show: false,
     },
   };
 
   return (
-    <Paper className="flex flex-col flex-auto shadow rounded-2xl overflow-hidden">
-      <div className="flex flex-col p-24 pb-16">
-        <div className="flex items-start justify-between">
+    <ThemeProvider theme={contrastTheme}>
+      <Root className="sm:col-span-2 lg:col-span-3 dark flex flex-col flex-auto shadow rounded-2xl overflow-hidden">
+        <div className="flex items-center justify-between mt-40 ml-40 mr-24 sm:mr-40">
           <div className="flex flex-col">
-            <Typography className="mr-16 text-lg font-medium tracking-tight leading-6 truncate">
-              Account Balance
+            <Typography className="mr-16 text-2xl md:text-3xl font-semibold tracking-tight leading-7">
+              Histograma de Gastos Financieros
             </Typography>
             <Typography className="font-medium" color="text.secondary">
-              Monthly balance growth and avg. monthly income
+              Visualización de patrones de gastos en PEN y USD por periodos.
             </Typography>
           </div>
-
-          <div className="">
-            <Chip size="small" className="font-medium text-sm" label="12 months" />
+          <div className="mt-12 sm:mt-0 sm:ml-8">
+            <Tabs
+              value={tabValue}
+              onChange={(ev, value) => setTabValue(value)}
+              indicatorColor="secondary"
+              textColor="inherit"
+              variant="scrollable"
+              scrollButtons={false}
+              className="-mx-4 min-h-40"
+              classes={{ indicator: 'flex justify-center bg-transparent w-full h-full' }}
+              TabIndicatorProps={{
+                children: (
+                  <Box
+                    sx={{ bgcolor: 'text.disabled' }}
+                    className="w-full h-full rounded-full opacity-20"
+                  />
+                ),
+              }}
+            >
+              {Object.entries(ranges).map(([key, label]) => (
+                <Tab
+                  className="text-14 font-semibold min-h-40 min-w-64 mx-4 px-12"
+                  disableRipple
+                  key={key}
+                  label={label}
+                />
+              ))}
+            </Tabs>
           </div>
         </div>
-        <div className="flex items-start mt-24 mr-8">
-          <div className="flex flex-col">
-            <Typography className="font-semibold text-3xl md:text-5xl tracking-tighter">
-              {growRate}%
-            </Typography>
-            <Typography className="font-medium text-sm leading-none" color="text.secondary">
-              Average Monthly Growth
-            </Typography>
-          </div>
-          <div className="flex flex-col ml-32 md:ml-64">
-            <Typography className="font-semibold text-3xl md:text-5xl tracking-tighter">
-              {ami.toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'USD',
-              })}
-            </Typography>
-            <Typography className="font-medium text-sm leading-none" color="text.secondary">
-              Average Monthly Income
-            </Typography>
-          </div>
+        <div className="flex flex-col flex-auto h-320">
+          <ReactApexChart
+            options={chartOptions}
+            series={series[currentRange]}
+            type={chartOptions.chart.type}
+            height={chartOptions.chart.height}
+          />
         </div>
-      </div>
-      <div className="flex flex-col flex-auto">
-        <ReactApexChart
-          className="flex-auto w-full h-full"
-          options={chartOptions}
-          series={series}
-          type={chartOptions.chart.type}
-          height={chartOptions.chart.height}
-        />
-      </div>
-    </Paper>
+      </Root>
+    </ThemeProvider>
   );
 }
 
