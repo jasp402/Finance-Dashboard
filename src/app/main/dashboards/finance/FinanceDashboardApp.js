@@ -12,15 +12,12 @@ import CurrentStatementWidget from './widgets/CurrentStatementWidget';
 import AccountBalanceWidget from './widgets/AccountBalanceWidget';
 import RecentTransactionsWidget from './widgets/RecentTransactionsWidget';
 import BudgetWidget from './widgets/BudgetWidget';
-import TestWidget from './widgets/totalsWidget';
 import { fetchWidgetData, selectWidget } from './store/myWidgetSlice';
 
 function FinanceDashboardApp() {
   const dispatch = useDispatch();
   const widgets = useSelector(selectWidgets);
   const widgetsData = useSelector(selectWidget);
-
-  console.log(widgetsData);
 
   useEffect(() => {
     dispatch(getWidgets());
@@ -31,8 +28,7 @@ function FinanceDashboardApp() {
     <FusePageSimple
       header={<FinanceDashboardAppHeader />}
       content={
-        <div className="w-full px-24 md:px-32 pb-24">
-
+        <>
           {useMemo(() => {
             const container = {
               show: {
@@ -41,7 +37,6 @@ function FinanceDashboardApp() {
                 },
               },
             };
-
             const item = {
               hidden: { opacity: 0, y: 20 },
               show: { opacity: 1, y: 0 },
@@ -49,35 +44,45 @@ function FinanceDashboardApp() {
 
             return (
               !_.isEmpty(widgets) && (
-                <motion.div className="w-full" variants={container} initial="hidden" animate="show">
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-32 w-full mt-32">
-                    <div className="grid gap-32 sm:grid-flow-col xl:grid-flow-row">
-                      <motion.div variants={item} className="flex flex-col flex-auto">
-                         {!_.isEmpty(widgetsData) && <PreviousStatementWidget /> }
-                      </motion.div>
-
-                      <motion.div variants={item} className="flex flex-col flex-auto">
-                        <CurrentStatementWidget />
-                      </motion.div>
-                    </div>
-                    <motion.div variants={item} className="flex flex-col flex-auto">
+                <motion.div
+                  className="-full md:p-32 gap-32 p-24"
+                  variants={container}
+                  initial="hidden"
+                  animate="show">
+                   <motion.div variants={item} className='sm:col-span-2 lg:col-span-3'>
                       <AccountBalanceWidget />
                     </motion.div>
-                  </div>
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-32 w-full mt-32">
-                    <motion.div variants={item} className="xl:col-span-2 flex flex-col flex-auto">
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full pt-24">
+                  {/* Card 1 - Izquierda */}
+                    <motion.div
+                      variants={item}
+                      className="flex flex-col flex-1 min-w-0" // Asegura que la card no se desborde
+                    >
+    {!_.isEmpty(widgetsData) && <PreviousStatementWidget />}
+  </motion.div>
+
+                    {/* Card 2 - Derecha */}
+                    <motion.div
+                      variants={item}
+                      className="flex flex-col flex-1 min-w-0"
+                    >
+    <CurrentStatementWidget />
+  </motion.div>
+                    </div>
+                  <div className='grid grid-cols-1 xl:grid-cols-3 gap-32 w-full mt-32'>
+                    <motion.div variants={item} className='xl:col-span-2 flex flex-col flex-auto'>
                       <RecentTransactionsWidget />
                     </motion.div>
-                    <motion.div variants={item} className="flex flex-col flex-auto">
+                    <motion.div variants={item} className='flex flex-col flex-auto'>
                       <BudgetWidget />
                     </motion.div>
                   </div>
                 </motion.div>
               )
             );
-          }, [widgets,widgetsData])}
-
-        </div>
+          }, [widgets, widgetsData])}
+        </>
       }
     />
   );
