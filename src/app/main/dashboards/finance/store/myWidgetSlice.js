@@ -4,7 +4,15 @@ import axios from 'axios';
 // Thunk asíncrono para obtener datos del widget
 export const fetchWidgetData = createAsyncThunk('financeDashboardApp/widgets/fetchWidgetData', async (_, { rejectWithValue }) => {
   const response = await axios.get('/dashboard'); // ajustar luego el endpoint correcto
-  return response.data;
+  const arrayData = response.data;
+  // delete response.data[1];
+  const result = {};
+  arrayData.forEach((item) => {
+    Object.keys(item).forEach((key) => {
+      result[key] = item[key];
+    });
+  });
+  return result;
 });
 
 const fetchWidgetSlice = createSlice({
@@ -13,7 +21,7 @@ const fetchWidgetSlice = createSlice({
   reducers: {},
   extraReducers: {
     [fetchWidgetData.fulfilled]: (state, action) => {
-      return action.payload[0];
+      return action.payload;
     },
     [fetchWidgetData.rejected]: (state, action) => {
       return { error: action.payload };
