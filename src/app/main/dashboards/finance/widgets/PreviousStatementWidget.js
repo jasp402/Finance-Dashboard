@@ -36,7 +36,6 @@ function PreviousStatementWidget() {
   const widgetsData = useSelector(selectWidget);
   // const { status, date, limit, spent, minimum } = widgets?.previousStatement;
 
-  console.log(widgetsData);
 
   if (!widgetsData?.annualFinancialSummary) {
     return <div className="p-24 text-red-500">Cargando datos financieros...</div>;
@@ -58,11 +57,19 @@ function PreviousStatementWidget() {
             Total de operaciones anuales
           </Typography>
           {status === 'paid' && (
-            <Typography className="text-green-600 font-medium text-sm">Ultima operación {formatCustomDateTime(date, hour)}</Typography>
+            <Typography className="text-black font-medium text-sm" variant="caption">
+              Última operación
+              <Typography className="text-green-600" variant="span">
+                {formatCustomDateTime(date, hour)}
+              </Typography>
+            </Typography>
           )}
           {status === 'pending' && (
-            <Typography className="text-red-600 font-medium text-sm">
-              Must be paid before {date}
+            <Typography className="text-black font-medium text-sm" variant="caption">
+              Operación más reciente
+              <Typography className="text-red-600" variant="span">
+                {formatCustomDateTime(date, hour)}
+              </Typography>
             </Typography>
           )}
         </div>
